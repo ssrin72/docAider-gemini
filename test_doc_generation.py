@@ -1,7 +1,12 @@
 import os
+import sys
+
+# Add local code2flow clone to Python's path
+# This ensures that the cloned repository is used for imports.
+sys.path.insert(0, os.path.abspath("code2flow"))
+
 from dotenv import load_dotenv
-from repo_agents.multi_agent_generation.multi_agent_conversation import
-multi_agent_documentation_generation
+from repo_agents.multi_agent_generation.multi_agent_conversation import multi_agent_documentation_generation
 
 def main():
     """
@@ -17,8 +22,7 @@ def main():
 
     if not os.path.exists(file_to_document):
         print(f"Error: The file '{file_to_document}' does not exist.")
-        print("Please create it or change the 'file_to_document' variable to an
-existing file.")
+        print("Please create it or change the 'file_to_document' variable to an existing file.")
         return
 
     print(f"Generating documentation for: {file_to_document}")

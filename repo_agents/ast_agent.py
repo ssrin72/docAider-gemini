@@ -1,5 +1,7 @@
 import os
-from code2flow.code2flow import utils as graph_utils
+import code2flow
+from code2flow import code2flow as c
+from c import utils as graph_utils
 from repo_documentation.utils import get_additional_docs_calls
 
 class ASTAgent:
