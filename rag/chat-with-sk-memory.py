@@ -1,95 +1,49 @@
 import asyncio
-import os
-from semantic_kernel import Kernel
-from semantic_kernel.functions import KernelFunction
-from semantic_kernel.connectors.ai.google import GoogleGeminiChatCompletion, GoogleGeminiTextEmbedding
-from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
-from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-from semantic_kernel.memory.volatile_memory_store import  VolatileMemoryStore
+from langchain_community.chat_models import ChatOllama
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
-kernel = Kernel()
-collection_id = "generic"
-chat_service_id = "chat-with-llm"
-
-# Add a chat completion service
-gemini_chat_completion = GoogleGeminiChatCompletion(
-  service_id=chat_service_id,
-  model_id="gemini-2.5-pro",
-  api_key=os.getenv("GEMINI_API_KEY")
-)
-kernel.add_service(gemini_chat_completion)
-# Add a text embedding service
-embedding_generator = GoogleGeminiTextEmbedding(
-  service_id="embedding",
-  model_id="models/embedding-004",
-  api_key=os.getenv("GEMINI_API_KEY")
-)
-kernel.add_service(embedding_generator)
-
-volatile_memory_store = VolatileMemoryStore() # Volatile memory store
-# Register the memory store to the semantic text memory
-memory = SemanticTextMemory(storage=volatile_memory_store, embeddings_generator=embedding_generator)
-text_memory_plugin = TextMemoryPlugin(memory)
-kernel.add_plugin(text_memory_plugin, "TextMemoryPluginVMS")
-
-# Save information or knowledge to the memory
-async def populate_memory(memory: SemanticTextMemory, id: str, text: str) -> None:
-  await memory.save_information(collection=collection_id, id=id, text=text)
-
-# set up a chat using the knowledge from memory
-async def setup_chat_with_memory(kernel: Kernel, service_id: str) -> KernelFunction:
-  prompt = """
-  {{$input}}
-  Generate a response beased on the user input above.
-  This is the background information for you. You can use or not use it.
-  {{$document}}
-  You can say "I don't know" if you do not have an answer.
-  """
-
-  # Configure the prompt template
-  prompt_template_config = PromptTemplateConfig(
-    template=prompt,
-    name="chat_with_memory",
-    template_format="semantic-kernel",
-    input_variables=[
-      InputVariable(name="input", description="The user input", is_required=True),
-      InputVariable(name="document",description="The retrieval document", is_required=True)
-    ],
-  )
-
-  return kernel.add_function(
-    function_name="chat_with_memory",
-    plugin_name="RAG",
-    prompt_template_config=prompt_template_config,
-  )
-
-# Perform the chat with LLM considering background knowledge (Basic RAG architecture)
-async def rag_chat(user_input: str):
-  print(f"Searching relevant document from the memory...")
-  retrieval_document = (await memory.search(collection=collection_id, query=user_input))[0].text
-  print(f"Retrieved document: {retrieval_document}")
-  print(f"Setting up a chat function with memory...")
-  chat_function = await setup_chat_with_memory(kernel, chat_service_id)
-  print(f"Generating a response...")
-  response = await kernel.invoke(chat_function, input=user_input, document=retrieval_document)
-  print(f"User: {user_input}")
-  print(f"LLM says: {response}")
-
-# Search the memory to find a match
-async def memory_search(memory: SemanticTextMemory, query: str):
-  result = await memory.search(collection=collection_id, query=query)
-  print(result[0].text)
-
-# Main function of the module
 async def main() -> None:
-  # Inject some information samples to memory
-  await populate_memory(memory=memory, id="id1", text="Sally's savings from 2023 are $50,000")
-  await populate_memory(memory=memory, id="id2", text="Jack's savings from 2020 are $100,000")
-  await populate_memory(memory=memory, id="id2", text="My savings from 2023 are $70,000")
-  # Construct the user input
-  user_input = "Do you know Sally's savings from 2023?"
-  await rag_chat(user_input)
+    # Set up LLM and embeddings
+    llm = ChatOllama(model="llama3")
+    embeddings = OllamaEmbeddings(model="all-minilm")
+
+    # Populate vector store
+    texts = [
+        "Sally's savings from 2023 are $50,000",
+        "Jack's savings from 2020 are $100,000",
+        "My savings from 2023 are $70,000"
+    ]
+    vectorstore = FAISS.from_texts(texts, embedding=embeddings)
+    retriever = vectorstore.as_retriever()
+    
+    # Prompt template
+    prompt_template_str = """
+    {input}
+    Generate a response beased on the user input above.
+    This is the background information for you. You can use or not use it.
+    {document}
+    You can say "I don't know" if you do not have an answer.
+    """
+    prompt = ChatPromptTemplate.from_template(prompt_template_str)
+    
+    # RAG chain
+    chain = (
+        {"document": retriever, "input": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+
+    # Invoke chain
+    user_input = "Do you know Sally's savings from 2023?"
+    response = await chain.ainvoke(user_input)
+    
+    print(f"User: {user_input}")
+    print(f"LLM says: {response}")
 
 if __name__ == "__main__":
   asyncio.run(main())

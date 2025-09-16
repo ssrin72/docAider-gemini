@@ -23,10 +23,9 @@ jobs:
 
       - name: Set up .env file
         run: |
-          echo "GLOBAL_LLM_SERVICE=Gemini" >> .env
           echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env
           echo "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}" >> .env
-          echo "ROOT_FOLDER=/docAider-gemini" >> .env
+          echo "ROOT_FOLDER=/workspace" >> .env
         shell: bash
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -116,10 +115,9 @@ jobs:
 
       - name: Set up .env file
         run: |
-          echo "GLOBAL_LLM_SERVICE=Gemini" >> .env
           echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env
           echo "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}" >> .env
-          echo "ROOT_FOLDER=/docAider-gemini" >> .env
+          echo "ROOT_FOLDER=/workspace" >> .env
         shell: bash
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
