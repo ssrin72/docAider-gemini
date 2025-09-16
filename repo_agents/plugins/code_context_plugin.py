@@ -1,29 +1,16 @@
 import os
 from repo_agents.ast_agent import ASTAgent
-from semantic_kernel.functions import kernel_function
-from typing import Annotated
+from langchain.tools import tool
 
-class CodeContextPlugin:
-  def __init__(self) -> None:
-    self.ast_helper = ASTAgent()
+ast_helper = ASTAgent()
 
-  @kernel_function(
-    name="get_file_content",
-    description="Gets the content of a file"
-  )
-  def get_file_content(
-    self,
-    file_path: Annotated[str, "The file path"]
-  ) -> Annotated[str, "The content of the file"]:
+@tool
+def get_file_content(file_path: str) -> str:
+    """Gets the content of a file"""
     with open(file_path, "r") as file:
-      return file.read()
-  
-  @kernel_function(
-    name="get_callee_function_info",
-    description="Gets callee function info"
-  )
-  def get_callee_function_info(
-    self,
-    file_path: Annotated[str, "The file path"]
-  ) -> Annotated[str, "The information of the callee functions"]:
-    return self.ast_helper.get_callee_function_info(file_path)
+        return file.read()
+
+@tool
+def get_callee_function_info(file_path: str) -> str:
+    """Gets callee function info"""
+    return ast_helper.get_callee_function_info(file_path)

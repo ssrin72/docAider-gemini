@@ -5,17 +5,20 @@ import markdown
 HTML_EXTENSION = '.html'
 MD_EXTENSION = '.md'
 
+# Get the directory where the current script is located
+merger_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Load HTML template parts
-with open('/docAider/repo_documentation/merging/head.html', 'r', encoding='utf-8') as f:
+with open(os.path.join(merger_dir, 'head.html'), 'r', encoding='utf-8') as f:
     head = f.read()
 
-with open('/docAider/repo_documentation/merging/body.html', 'r', encoding='utf-8') as f:
+with open(os.path.join(merger_dir, 'body.html'), 'r', encoding='utf-8') as f:
     body = f.read()
 
-with open('/docAider/repo_documentation/merging/file-card.html', 'r', encoding='utf-8') as f:
+with open(os.path.join(merger_dir, 'file-card.html'), 'r', encoding='utf-8') as f:
     file_card_template = f.read()
 
-with open('/docAider/repo_documentation/merging/script.html', 'r', encoding='utf-8') as f:
+with open(os.path.join(merger_dir, 'script.html'), 'r', encoding='utf-8') as f:
     script = f.read()
 
 def create_documentation(docs_folder):

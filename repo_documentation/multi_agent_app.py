@@ -4,6 +4,10 @@ sys.path.append(parent_dir)
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="./.env")
 
+_root_folder = os.getenv("ROOT_FOLDER")
+if not _root_folder or _root_folder == "/":
+    os.environ["ROOT_FOLDER"] = parent_dir
+
 from repo_agents.multi_agent_generation.git_repo_agent import GitRepoAgent
 from repo_documentation.merging.merger import create_documentation
 

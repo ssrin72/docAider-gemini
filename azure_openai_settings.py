@@ -1,18 +1,17 @@
 import os
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from dotenv import load_dotenv
 
-azure_chat_completion_service = AzureChatCompletion(
-  deployment_name=os.getenv("CHAT_DEPLOYMENT_NAME"),
-  api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-  endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-  api_version=os.getenv("AZURE_OPENAI_API_VERSION")
-)
+# Load environment variables from .env file
+load_dotenv(dotenv_path='.env')
 
-autogen_llm_config = dict(
-  model=os.getenv("CHAT_DEPLOYMENT_NAME"),
-  base_url=os.getenv("BASE_URL"),
-  api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-  api_type=os.getenv("API_TYPE"),
-  api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-  temperature=0
-)
+# Configuration for Gemini for AutoGen
+autogen_llm_config = {
+    "config_list": [
+        {
+            "model": "gemini-2.5-pro",
+            "api_key": os.getenv("GEMINI_API_KEY"),
+            "api_type": "google",
+        }
+    ],
+    "temperature": 0,
+}
