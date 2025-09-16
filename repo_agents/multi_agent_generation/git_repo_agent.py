@@ -3,14 +3,13 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_dir)
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="./.env")
-import azure_openai_settings as ai_service_settings
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.google import GoogleGeminiChatCompletion
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
-    AzureChatPromptExecutionSettings,
+from semantic_kernel.connectors.ai.google.google_gemini_prompt_execution_settings import (
+    GoogleGeminiPromptExecutionSettings,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from repo_agents.plugins.github_info_plugin import GithubInfoPlugin
@@ -26,12 +25,18 @@ class GitRepoAgent:
   def __init__(self) -> None:
     self.kernel = Kernel()
 
-    # Add Azure OpenAI chat completion
-    self.kernel.add_service(ai_service_settings.azure_chat_completion_service)
+    # Add Google Gemini chat completion
+    self.kernel.add_service(
+        GoogleGeminiChatCompletion(
+            service_id="gemini",
+            model_id="gemini-2.5-pro",
+            api_key=os.getenv("GEMINI_API_KEY"),
+        )
+    )
 
-    self.chat_completion : AzureChatCompletion = self.kernel.get_service(type=ChatCompletionClientBase)
+    self.chat_completion: GoogleGeminiChatCompletion = self.kernel.get_service(type=ChatCompletionClientBase)
     # Enable planning
-    self.execution_settings = AzureChatPromptExecutionSettings(
+    self.execution_settings = GoogleGeminiPromptExecutionSettings(
       tool_choice="auto",
       temperature=0
     )

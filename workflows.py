@@ -23,29 +23,13 @@ jobs:
 
       - name: Set up .env file
         run: |
-          echo "GLOBAL_LLM_SERVICE=${GLOBAL_LLM_SERVICE}" >> .env
-          echo "CHAT_DEPLOYMENT_NAME=${CHAT_DEPLOYMENT_NAME}" >> .env
-          echo "AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}" >> .env
-          echo "AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}" >> .env
-          echo "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=${AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME}" >> .env
-          echo "AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}" >> .env
-          echo "AZURE_AI_SEARCH_KEY=${AZURE_AI_SEARCH_KEY}" >> .env
-          echo "API_TYPE=${API_TYPE}" >> .env
-          echo "BASE_URL=${BASE_URL}" >> .env
-          echo "SEARCH_ENDPOINT=${SEARCH_ENDPOINT}" >> .env
+          echo "GLOBAL_LLM_SERVICE=Gemini" >> .env
+          echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env
           echo "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}" >> .env
+          echo "ROOT_FOLDER=/docAider-gemini" >> .env
         shell: bash
         env:
-          GLOBAL_LLM_SERVICE: ${{ secrets.GLOBAL_LLM_SERVICE }}
-          CHAT_DEPLOYMENT_NAME: ${{ secrets.CHAT_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_API_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION }}
-          AZURE_AI_SEARCH_KEY: ${{ secrets.AZURE_AI_SEARCH_KEY }}
-          API_TYPE: ${{ secrets.API_TYPE }}
-          BASE_URL: ${{ secrets.BASE_URL }}
-          SEARCH_ENDPOINT: ${{ secrets.SEARCH_ENDPOINT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
 
       - name: Get local branches
@@ -132,29 +116,13 @@ jobs:
 
       - name: Set up .env file
         run: |
-          echo "GLOBAL_LLM_SERVICE=${GLOBAL_LLM_SERVICE}" >> .env
-          echo "CHAT_DEPLOYMENT_NAME=${CHAT_DEPLOYMENT_NAME}" >> .env
-          echo "AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}" >> .env
-          echo "AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}" >> .env
-          echo "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=${AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME}" >> .env
-          echo "AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}" >> .env
-          echo "AZURE_AI_SEARCH_KEY=${AZURE_AI_SEARCH_KEY}" >> .env
-          echo "API_TYPE=${API_TYPE}" >> .env
-          echo "BASE_URL=${BASE_URL}" >> .env
-          echo "SEARCH_ENDPOINT=${SEARCH_ENDPOINT}" >> .env
+          echo "GLOBAL_LLM_SERVICE=Gemini" >> .env
+          echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env
           echo "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}" >> .env
+          echo "ROOT_FOLDER=/docAider-gemini" >> .env
         shell: bash
         env:
-          GLOBAL_LLM_SERVICE: ${{ secrets.GLOBAL_LLM_SERVICE }}
-          CHAT_DEPLOYMENT_NAME: ${{ secrets.CHAT_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_API_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION }}
-          AZURE_AI_SEARCH_KEY: ${{ secrets.AZURE_AI_SEARCH_KEY }}
-          API_TYPE: ${{ secrets.API_TYPE }}
-          BASE_URL: ${{ secrets.BASE_URL }}
-          SEARCH_ENDPOINT: ${{ secrets.SEARCH_ENDPOINT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
 
       - name: Run Docker Compose

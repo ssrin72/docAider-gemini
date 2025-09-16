@@ -1,10 +1,8 @@
 import asyncio
-import ollama
 import os
 from semantic_kernel import Kernel
 from semantic_kernel.functions import KernelFunction
-from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
+from semantic_kernel.connectors.ai.google import GoogleGeminiChatCompletion, GoogleGeminiTextEmbedding
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
@@ -15,16 +13,17 @@ collection_id = "generic"
 chat_service_id = "chat-with-llm"
 
 # Add a chat completion service
-ollama_chat_completion = OllamaChatCompletion(
+gemini_chat_completion = GoogleGeminiChatCompletion(
   service_id=chat_service_id,
-  ai_model_id="llama3",
-  url="http://localhost:11434/api/chat"
+  model_id="gemini-2.5-pro",
+  api_key=os.getenv("GEMINI_API_KEY")
 )
-kernel.add_service(ollama_chat_completion)
+kernel.add_service(gemini_chat_completion)
 # Add a text embedding service
-embedding_generator = OllamaTextEmbedding(
+embedding_generator = GoogleGeminiTextEmbedding(
   service_id="embedding",
-  ai_model_id="all-minilm"
+  model_id="models/embedding-004",
+  api_key=os.getenv("GEMINI_API_KEY")
 )
 kernel.add_service(embedding_generator)
 
