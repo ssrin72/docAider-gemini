@@ -1,7 +1,7 @@
 import os
 import asyncio
 from autogen import ConversableAgent, register_function
-from autogen_utils import config as ai_service_settings
+import gemini_settings as ai_service_settings
 from repo_agents.multi_agent_generation.code_context_agent import CodeContextAgent
 from repo_agents.multi_agent_generation.prompt import DOCUMENTATION_PROMPT, REVIEWER_PROMPT, REVISOR_PROMPT
 from repo_documentation.utils import Mode, save_prompt_debug, read_file_content
