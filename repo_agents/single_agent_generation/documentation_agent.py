@@ -1,5 +1,5 @@
 import os, asyncio
-import azure_openai_settings as ai_service_settings
+import gemini_settings as ai_service_settings
 from semantic_kernel import Kernel
 from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import AzureChatPromptExecutionSettings
