@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(
 
 from code2flow.code2flow import ast_utils
 from code2flow.code2flow import utils as code2flow_utils
-from autogen_utils import utils as autogen_utils
+from celery_worker import tasks as autogen_tasks
 from repo_documentation import utils
 from cache.document import sha256_hash
 import argparse
@@ -113,10 +113,6 @@ class DocumentationUpdate():
 		- BFS Exploration
 		- Cache
 		"""
-		# Load assistants
-		self.assistant = autogen_utils.load_assistant_agent()
-		self.user = autogen_utils.load_user_agent()
-
 		# Generate graph
 		code2flow_utils.generate_graph(self.root_folder, self.output_dir)
 		self.graph = code2flow_utils.get_call_graph(self.output_dir)
@@ -153,16 +149,15 @@ class DocumentationUpdate():
 			file_path, self.graph, self.bfs_explore)
 
 		# 3. Generate the documentation for the file
-		docs = autogen_utils.get_documentation(
+		task = autogen_tasks.get_documentation.delay(
 			file_path=file_path,
 			file_content=content,
 			additional_docs=additional_docs,
-			user=self.user,
-			assistant=self.assistant,
 			output_dir=self.output_dir,
 			root_folder=self.root_folder,
 			save_debug=True
 		)
+		docs = task.get(timeout=600)
 
 		# 4. Write the generated documentation to the output directory and save to cache
 		self._write_docs_and_cache(file_path, content, docs)
@@ -209,7 +204,7 @@ class DocumentationUpdate():
 			additional_docs += additional_functions_info
 
 		# 6. Update the documentation based on the diffs and additional docs
-		updated_docs = autogen_utils.get_updated_documentation(
+		task = autogen_tasks.get_updated_documentation.delay(
 			file_path=file_path,
 			old_file_docs=self._get_old_file_docs(self.cache, file_path),
 			old_file_content=old_content,
@@ -217,11 +212,10 @@ class DocumentationUpdate():
 			diff=diff,
 			additional_docs=additional_docs,
 			changes=self._changes_to_string(changes),
-			user=self.user,
-			assistant=self.assistant,
 			output_dir=self.output_dir,
 			save_debug=True
 		)
+		updated_docs = task.get(timeout=600)
 
 		# 7. Write the updated documentation to the output directory and save to cache
 		self._write_docs_and_cache(file_path, new_content, updated_docs)
@@ -251,7 +245,7 @@ class DocumentationUpdate():
 		additional_docs = utils.get_additional_docs_path(file_path, self.graph, self.bfs_explore)
   
 		# Update the documentation based on the diffs and additional docs
-		updated_docs = autogen_utils.get_updated_parent_documentation(
+		task = autogen_tasks.get_updated_parent_documentation.delay(
 			file_path=file_path,
 			updated_functions=filtered,
 			additional_docs=additional_docs,
@@ -259,11 +253,10 @@ class DocumentationUpdate():
 			functions=functions,
 			parent_content=parent_content,
 			old_parent_docs = self._get_old_file_docs(self.cache, file_path),
-			user=self.user,
-			assistant=self.assistant,
 			output_dir=self.output_dir,
 			save_debug=True
 		)
+		updated_docs = task.get(timeout=600)
 
 		# Write the updated documentation to the output directory and save to cache
 		self._write_docs_and_cache(file_path, new_content, updated_docs)
@@ -300,16 +293,15 @@ class DocumentationUpdate():
 		# Get old documentation
 		old_file_docs = self._get_old_file_docs(self.cache, file_path)
 
-		updated_docs = autogen_utils.get_updated_commit_documentation(
+		task = autogen_tasks.get_updated_commit_documentation.delay(
 			file_path=file_path,
 			comment=comment,
 			file_content=file_content,
 			old_file_docs=old_file_docs,
-			user=self.user,
-			assistant=self.assistant,
 			output_dir=self.output_dir,
 			save_debug=True
 		)
+		updated_docs = task.get(timeout=600)
 		# Update cache with new documentation
 		self._write_docs_and_cache(file_path, new_content, updated_docs)
 

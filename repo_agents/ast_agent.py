@@ -7,7 +7,15 @@ class ASTAgent:
   This agent performs Abstract Syntax Tree (AST) analysis and generates a call graph of files.
   """
   def __init__(self) -> None:
-    self.root_folder = os.path.abspath(os.getenv("ROOT_FOLDER"))
+    self.root_folder = os.getenv("ROOT_FOLDER")
+    if not self.root_folder or self.root_folder == "/":
+        # Fallback to project root if ROOT_FOLDER is not set or is invalid.
+        # This makes the path relative to this file's location.
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        self.root_folder = project_root
+    else:
+        self.root_folder = os.path.abspath(self.root_folder)
+
     self.output_folder = os.path.join(self.root_folder, "docs_output")
     graph_utils.generate_graph(self.root_folder, self.output_folder)
     self.graph = graph_utils.get_call_graph(self.output_folder)
