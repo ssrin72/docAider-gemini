@@ -15,4 +15,6 @@ __pycache__/
 # Docs
 *docs_output*
 *samples*
-.aider*
+.aider.tags.cache.v4/cache.db
+.aider.tags.cache.v4/cache.db-shm
+.aider.tags.cache.v4/cache.db-wal
