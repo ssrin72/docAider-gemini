@@ -7,6 +7,9 @@ sys.path.append(parent_dir)
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="./.env")
 
+_root_folder_path = os.getenv("ROOT_FOLDER")
+_root_folder = os.path.abspath(_root_folder_path) if _root_folder_path else None
+
 from repo_agents.multi_agent_generation.git_repo_agent import GitRepoAgent
 from repo_documentation.merging.merger import create_documentation
 
@@ -69,10 +72,41 @@ def run_generate_documentation_for_file(file_path: str):
   HTML(string=html_content, base_url=_root_folder).write_pdf(pdf_output_path)
   
   total = round(time.time() - start_time, 3)
-  root_folder = os.path.abspath(os.getenv("ROOT_FOLDER"))
-  output_folder = os.path.join(root_folder, "docs_output")
+  output_folder = os.path.join(_root_folder, "docs_output")
   create_documentation(output_folder)
   print(f"Documentation generation completed in {total}s.")
 
-# Test it
-run_generate_documentation()
+def run_generate_documentation():
+    """
+    Generates documentation for all Python files in the repository.
+    """
+    if not _root_folder or not os.path.isdir(_root_folder):
+        print("Error: ROOT_FOLDER environment variable not set or is not a valid directory.")
+        return
+
+    print(f"Starting documentation generation for all files in {_root_folder}")
+
+    excluded_dirs = {'.git', '.github', 'docs_output', '.venv', '__pycache__'}
+    for item in os.listdir(_root_folder):
+        if os.path.isdir(os.path.join(_root_folder, item)) and item.endswith('_cache'):
+            excluded_dirs.add(item)
+
+    excluded_files = {os.path.basename(__file__)}
+
+    for root, dirs, files in os.walk(_root_folder, topdown=True):
+        dirs[:] = [d for d in dirs if d not in excluded_dirs]
+
+        for file in files:
+            if file.endswith('.py') and file not in excluded_files:
+                file_path = os.path.join(root, file)
+                relative_path = os.path.relpath(file_path, _root_folder)
+                print(f"--- Processing: {relative_path} ---")
+                try:
+                    run_generate_documentation_for_file(file_path)
+                except Exception as e:
+                    print(f"Failed to process {file_path}: {e}")
+
+    print("Finished generating documentation for all files.")
+
+if __name__ == "__main__":
+    run_generate_documentation()

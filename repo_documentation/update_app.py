@@ -46,10 +46,13 @@ class DocumentationUpdate():
 			print("Updating documentation based on branch changes...")
 			# 1. Get the latest commit of the current branch and the main branch
 			curr_branch_sha = git_utils.get_latest_commit_sha(self.repo, self.branch)
-			main_branch_sha = git_utils.get_latest_commit_sha(self.repo, 'main')
-
 			curr_branch_commit = self.repo.commit(curr_branch_sha)
-			main_branch_commit = self.repo.commit(main_branch_sha)
+
+			if self.branch == 'main':
+				main_branch_commit = curr_branch_commit.parents[0] if curr_branch_commit.parents else None
+			else:
+				main_branch_sha = git_utils.get_latest_commit_sha(self.repo, 'main')
+				main_branch_commit = self.repo.commit(main_branch_sha)
 
 			# 2. Find the diffs between the current branch and main
 			diffs = git_utils.get_diffs(curr_branch_commit, main_branch_commit)

@@ -18,3 +18,4 @@ langchain-text-splitters
 langchain-ollama
 faiss-cpu
 celery
+weasyprint
