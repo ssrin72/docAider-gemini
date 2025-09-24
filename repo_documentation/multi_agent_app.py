@@ -30,7 +30,7 @@ def run_generate_documentation_for_file(file_path: str):
   print(f"Generating documentation for {file_path} using multi-agent system...")
   # This function orchestrates the multi-agent conversation and returns the final markdown.
   
-  wait_times = [1, 2, 4, 8, 16, 32]
+  wait_times = [60, 120, 240, 480, 960, 1920] # 1m, 2m, 4m, 8m, 16m, 32m
   markdown_content = None
   for i, wait_time in enumerate(wait_times):
       try:
@@ -38,7 +38,7 @@ def run_generate_documentation_for_file(file_path: str):
           break  # Success
       except ClientError as e:
           if "429" in str(e) and i < len(wait_times) - 1:
-              print(f"Rate limit exceeded. Retrying in {wait_time}s...")
+              print(f"Rate limit exceeded. Retrying in {int(wait_time / 60)} minute(s)...")
               time.sleep(wait_time)
           else:
               raise e
@@ -64,6 +64,10 @@ def run_generate_documentation_for_file(file_path: str):
   total = round(time.time() - start_time, 3)
   print(f"Process completed in {total}s.")
   print(f"PDF documentation saved to: {pdf_output_path}")
+
+  # A delay of 1 minute between processing each file to avoid rate limiting.
+  print("Waiting for 1 minute before processing next file...")
+  time.sleep(60)
 
 # --- Main execution ---
 if __name__ == "__main__":

@@ -15,14 +15,14 @@ def main():
     # Load environment variables from .env file
     load_dotenv()
 
-    # Define the file to be documented
-    # Using 'file.py' as an example.
-    # Make sure this file exists at the root of your project.
-    file_to_document = "file.py"
+    if len(sys.argv) < 2:
+        print("Usage: python test_doc_generation.py <file_path>")
+        sys.exit(1)
+    
+    file_to_document = sys.argv[1]
 
     if not os.path.exists(file_to_document):
         print(f"Error: The file '{file_to_document}' does not exist.")
-        print("Please create it or change the 'file_to_document' variable to an existing file.")
         return
 
     print(f"Generating documentation for: {file_to_document}")

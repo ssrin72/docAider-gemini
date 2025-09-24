@@ -1,13 +1,11 @@
 import os, asyncio
-import gemini_settings as ai_service_settings
-from semantic_kernel import Kernel
-from semantic_kernel.prompt_template import PromptTemplateConfig
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import AzureChatPromptExecutionSettings
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
 from repo_agents.single_agent_generation.prompt import DOCUMENTATION_PROMPT
 from repo_agents.ast_agent import ASTAgent
 from cache.docs_cache import DocsCache
 from repo_documentation import utils as doc_utils
-from exceptions import SemanticKernelError
+from exceptions import DocGenByLangChainFailed
 
 class DocumentationAgent:
   """
@@ -19,12 +17,10 @@ class DocumentationAgent:
     self.output_folder = os.path.join(self.root_folder, "docs_output")
     self.ast_agent = ASTAgent()
     self.cache = DocsCache()
-    # Semantic kernel args
-    self.kernel = Kernel()
-    self.kernel.add_service(ai_service_settings.azure_chat_completion_service)
-    self.execution_settings = AzureChatPromptExecutionSettings(
-      temperature=0,  
-    ) # Configure execution settings. You can TUNE PARAMETERS here.
+    # Langchain args
+    self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
+    self.prompt_template = ChatPromptTemplate.from_template(DOCUMENTATION_PROMPT)
+    self.chain = self.prompt_template | self.llm
 
   async def generate_documentation_for_file(self, file_path, save_debug=False) -> None:
     """
@@ -33,32 +29,18 @@ class DocumentationAgent:
     file_name = os.path.basename(file_path)
     file_content = doc_utils.read_file_content(file_path)
     callee_functions = self.ast_agent.get_callee_function_info(file_path)
-    prompt = DOCUMENTATION_PROMPT.format(
-      file_name=file_name,
-      file_content=file_content,
-      callee_functions=callee_functions
-    )
 
-    # Configure the prompt template
-    prompt_template_config = PromptTemplateConfig(
-      template=prompt,
-      name="documentation-generation",
-      template_format="semantic-kernel",
-      execution_settings=self.execution_settings
-    )
-    # Add summarization function to the kernel
-    documentation_generator = self.kernel.add_function(
-      function_name="documentation_generation",
-      plugin_name="documentation_generator",
-      prompt_template_config=prompt_template_config,
-    )
-
-    # Invoke kernel to generate documentation
+    # Invoke chain to generate documentation
     documentation = ""
     try:
-      documentation = str(await self.kernel.invoke(documentation_generator))
-    except:
-      raise SemanticKernelError(f"The generation for {file_name} failed. Please check kernel configurations and try again.")
+      response = await self.chain.ainvoke({
+        "file_name": file_name,
+        "file_content": file_content,
+        "callee_functions": callee_functions
+      })
+      documentation = response.content
+    except Exception as e:
+      raise DocGenByLangChainFailed(f"The generation for {file_name} failed: {e}")
 
     # Save the documentation
     output_path = doc_utils.write_file_docs(
@@ -72,6 +54,11 @@ class DocumentationAgent:
 
     # Save the prompt message for debug
     if save_debug:
+      prompt = DOCUMENTATION_PROMPT.format(
+        file_name=file_name,
+        file_content=file_content,
+        callee_functions=callee_functions
+      )
       doc_utils.save_prompt_debug(self.output_folder, file_path, prompt, doc_utils.Mode.CREATE)
   
   def generate_all_documentation(self) -> None:

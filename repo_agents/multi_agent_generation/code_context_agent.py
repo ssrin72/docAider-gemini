@@ -47,7 +47,15 @@ class CodeContextAgent:
 
 # Test this agent
 if __name__ == "__main__":
+  if len(sys.argv) < 2:
+    print("Usage: python repo_agents/multi_agent_generation/code_context_agent.py <file_path>")
+    sys.exit(1)
+  
+  file_path = sys.argv[1]
+  if not os.path.exists(file_path):
+      print(f"Error: Target file not found at {file_path}")
+      sys.exit(1)
+
   cca = CodeContextAgent()
-  file_path = "file.py"
   result = asyncio.run(cca.code_context_explanation(file_path))
   print(result)
