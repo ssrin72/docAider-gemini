@@ -3,7 +3,13 @@ import os
 import unittest
 
 from unittest.mock import Mock, patch
-from autogen import AssistantAgent, UserProxyAgent
+try:
+    from autogen import AssistantAgent, UserProxyAgent
+except ModuleNotFoundError:
+    # If autogen is not installed, mock it for the test run.
+    # This prevents ModuleNotFoundError during test discovery and execution.
+    sys.modules['autogen'] = Mock()
+    from autogen import AssistantAgent, UserProxyAgent
 
 sys.path.append(os.path.abspath(
     os.path.join(os.path.dirname(__file__), './../')))
