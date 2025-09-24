@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv(dotenv_path='.env')
 
-# Configuration for Gemini
-llm_config = {
+# Configuration for Gemini for AutoGen
+autogen_llm_config = {
     "config_list": [
         {
             "model": "gemini-2.5-pro",
