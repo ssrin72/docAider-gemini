@@ -3,10 +3,10 @@ from workflows import update_docs_workflow_content, update_comments_workflow_con
 
 
 def create_workflow():
-    os.makedirs('/workspace/.github/workflows', exist_ok=True)
-    with open('/workspace/.github/workflows/update-docs.yml', 'w') as f:
+    os.makedirs('/.github/workflows', exist_ok=True)
+    with open('/.github/workflows/update-docs.yml', 'w') as f:
         f.write(update_docs_workflow_content)
-    with open('/workspace/.github/workflows/update-comments.yml', 'w') as f:
+    with open('/.github/workflows/update-comments.yml', 'w') as f:
         f.write(update_comments_workflow_content)
     
         

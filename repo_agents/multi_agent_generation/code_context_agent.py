@@ -48,6 +48,6 @@ class CodeContextAgent:
 # Test this agent
 if __name__ == "__main__":
   cca = CodeContextAgent()
-  file_path = "your-source-file-path."
+  file_path = "file.py"
   result = asyncio.run(cca.code_context_explanation(file_path))
   print(result)

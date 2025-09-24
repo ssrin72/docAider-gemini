@@ -1,5 +1,7 @@
 import os
-from code2flow.code2flow import utils as graph_utils
+import code2flow
+from code2flow import code2flow as c
+from c import utils as graph_utils
 from repo_documentation.utils import get_additional_docs_calls
 
 class ASTAgent:
@@ -7,7 +9,7 @@ class ASTAgent:
   This agent performs Abstract Syntax Tree (AST) analysis and generates a call graph of files.
   """
   def __init__(self) -> None:
-    self.root_folder = os.path.abspath(os.getenv("ROOT_FOLDER"))
+    self.root_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
     self.output_folder = os.path.join(self.root_folder, "docs_output")
     graph_utils.generate_graph(self.root_folder, self.output_folder)
     self.graph = graph_utils.get_call_graph(self.output_folder)
