@@ -16,8 +16,6 @@ Revise agent: Revises the documentation based on the reviewer's comments
 Agent manager: is the mediator of the conversation
 """
 
-root_folder = os.path.abspath(os.getenv("ROOT_FOLDER"))
-output_folder = os.path.join(root_folder, "docs_output")
 code_context_agent = CodeContextAgent()
 
 documentation_generation_agent = ConversableAgent(
@@ -67,6 +65,8 @@ register_function(
 )
 
 def multi_agent_documentation_generation(file_path) -> str:
+  root_folder = os.path.abspath(os.getenv("ROOT_FOLDER"))
+  output_folder = os.path.join(root_folder, "docs_output")
   file_content = read_file_content(file_path)
 
   chat_result = agent_manager.initiate_chats(

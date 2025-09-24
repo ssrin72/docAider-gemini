@@ -19,7 +19,7 @@ class CodeContextAgent:
   Additionally, as a lightweight code explainer, the user can consult with this agent for code context description.
   """
   def __init__(self) -> None:
-    self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
+    self.llm = ChatGoogleGenerativeAI(model=os.getenv("GEMINI_MODEL"), temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
     tools = [code_context_plugin.get_file_content, code_context_plugin.get_callee_function_info]
     
     prompt = ChatPromptTemplate.from_messages(
