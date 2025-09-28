@@ -189,14 +189,15 @@ def load_user_agent():
     return UserProxyAgent(
         name="user",
         code_execution_config=False,
+        human_input_mode="NEVER" # Set to NEVER for automated execution
     )
 
 
-def initiate_chat(user: UserProxyAgent, assistant, prompt):
+def initiate_chat(user: UserProxyAgent, assistant, prompt: str, max_turns: int = 15): # Default to 15 turns
     user.initiate_chat(
         assistant,
         message=prompt,
-        max_turns=1,
+        max_turns=max_turns,
         silent=True
     )
 

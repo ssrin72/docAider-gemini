@@ -1,73 +1,50 @@
+from typing import List, Tuple
 import os
-import markdown
 
-# Define the extensions for HTML and Markdown files
-HTML_EXTENSION = '.html'
+# Define the extension for Markdown files
 MD_EXTENSION = '.md'
 
-# Get the directory where the current script is located
-merger_dir = os.path.dirname(os.path.abspath(__file__))
+def create_documentation(docs_folder: str, folder_overview_content: str = "", collected_file_docs: List[Tuple[str, str]] = None):
+    # `collected_file_docs` will now be passed directly from multi_agent_app.py
+    # We no longer read individual files from `docs_folder` in this function for the content.
 
-# Load HTML template parts
-with open(os.path.join(merger_dir, 'head.html'), 'r', encoding='utf-8') as f:
-    head = f.read()
-
-with open(os.path.join(merger_dir, 'body.html'), 'r', encoding='utf-8') as f:
-    body = f.read()
-
-with open(os.path.join(merger_dir, 'file-card.html'), 'r', encoding='utf-8') as f:
-    file_card_template = f.read()
-
-with open(os.path.join(merger_dir, 'script.html'), 'r', encoding='utf-8') as f:
-    script = f.read()
-
-def create_documentation(docs_folder):
-    # Generate table of contents
-    files = []
-    for root, _, _files in os.walk(docs_folder):
-        for file in _files:
-            if file.endswith(MD_EXTENSION) and not file.startswith('index'):
-                path = os.path.relpath(os.path.join(root, file), docs_folder)
-                print(path)
-                files.append((root, path))
-
+    # Generate table of contents based on collected file paths
+    # Use collected_file_docs if provided, otherwise default to an empty list
+    files_for_toc = [doc[0] for doc in collected_file_docs] if collected_file_docs else []
+    
     # Sort by basename
-    files.sort(key=lambda x: os.path.basename(x[1]))
+    files_for_toc.sort(key=lambda x: os.path.basename(x))
 
     # Get table of contents
-    tree = to_tree([path for _, path in files])
-    print(f"Tree: {tree}")
-    print(f"Files: {files}")
+    tree = to_tree(files_for_toc)
     table_of_contents = get_table_of_contents(tree)
 
-    # Get the documentation file-cards
-    documentation_content = get_documentation_content(files)
+    # Get the documentation content from the collected_file_docs
+    documentation_content = get_documentation_content(collected_file_docs)
 
-    # Replace placeholders in the template
-    filled_template = body.format(
-        table_of_contents=table_of_contents,
-        documentation_content=documentation_content,
-        script=script
-    )
+    # Combine folder overview, table of contents and documentation content
+    output = ""
+    if folder_overview_content:
+        output += f"{folder_overview_content}\n\n---\n\n" # Prepend folder overview
 
-    # Write the filled template to the output file
-    output = head + filled_template
-    output_file = os.path.join(docs_folder, f'index{HTML_EXTENSION}')
+    output += f"# Project Documentation\n\n## Table of Contents\n{table_of_contents}\n\n{documentation_content}"
+
+    # Write the combined content to the output file
+    output_file = os.path.join(docs_folder, f'index{MD_EXTENSION}')
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(output)
 
     print(f"Final documentation has been generated in {output_file}")
 
-def create_file_card(file_path: str, docs):
-    # Clean the path to create a valid HTML id
-    id = clean_path(file_path)
+def create_file_card(file_path: str, docs: str):
     # Remove file extensions for display purposes
-    file_name = file_path.replace('\\', '/').replace(MD_EXTENSION, '')
-    # Format the file card template with the id and content
-    return file_card_template.format(id=id, file_name=file_name, content=docs)
+    file_name_display = file_path.replace('\\', '/').replace(MD_EXTENSION, '')
+    # Format as a Markdown section
+    return f"\n---\n\n## {file_name_display}\n\n{docs}\n"
 
-def get_table_of_contents(tree, prefix=""):
-    table_of_contents = "<ul>\n"
+def get_table_of_contents(tree, indent_level=0, prefix=""):
+    table_of_contents = ""
+    indent_space = "    " * indent_level
 
     # Separate directories and files
     directories = []
@@ -88,36 +65,25 @@ def get_table_of_contents(tree, prefix=""):
 
     # Handle directories first
     for key, value in directories:
-        table_of_contents += f'<li><details><summary>📁 {key}</summary>\n'
-        table_of_contents += get_table_of_contents(value, prefix + key + "/")
-        table_of_contents += '</details></li>\n'
+        table_of_contents += f'{indent_space}* 📁 {key}\n'
+        table_of_contents += get_table_of_contents(value, indent_level + 1, prefix + key + "/")
 
     # Then handle files
     for file in files:
-        id = clean_path(prefix + file)
-        link = os.path.basename(file).replace(MD_EXTENSION, '')
-        table_of_contents += f'<li><a href="javascript:void(0);" onclick="showFile(\'{id}\')">🐍 {link}</a></li>\n'
+        # For TOC, link to the relevant section within the same markdown file
+        link_text = os.path.basename(file).replace(MD_EXTENSION, '')
+        anchor = link_text.lower().replace(' ', '-').replace('_', '-') # Basic slugification for markdown anchor
+        table_of_contents += f'{indent_space}* 🐍 [{link_text}](#{anchor})\n'
 
-    table_of_contents += "</ul>\n"
     return table_of_contents
 
-def clean_path(path):
-    # Clean the path to create a valid HTML id
-    return path.replace(MD_EXTENSION, '') \
-        .replace('\\', '/') \
-        .replace('/', '-') \
-        .replace('.', '-')
-
-def get_documentation_content(files):
+def get_documentation_content(collected_file_docs: List[Tuple[str, str]]):
     documentation_content = ""
-    for root, path in files:
-        basename = os.path.basename(path)
-        file_path = os.path.join(root, basename)
-        with open(file_path, 'r', encoding='utf-8') as f:
-            # Convert Markdown files to HTML
-            content = markdown.markdown(f.read(), extensions=['fenced_code'])
-            # Create file card for each file
-            documentation_content += create_file_card(path, content)
+    # Ensure collected_file_docs is not None before iterating
+    if collected_file_docs:
+        for relative_path, doc_content in collected_file_docs:
+            # Create file card (as Markdown section) for each file using collected content
+            documentation_content += create_file_card(relative_path, doc_content)
     return documentation_content
 
 def to_tree(files):

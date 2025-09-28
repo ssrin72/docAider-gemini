@@ -6,100 +6,86 @@ Now you need to generate a document for "{file_name}".
 The content of the code is as follows:
 {file_content}
 
-You must obey the structure and format that will be provided below. 
+You will also be provided with `additional_docs` which contains contextual information, including details about called functions.
+Use ALL this information to generate the documentation.
 
-The output you produce will be placed within another HTML document, so you should not include any additional HTML tags in your response.
+You must obey the structure and format that will be provided below.
 
 If a section does not have any information or is not applicable, you can skip it and move to the next one.
 
-Please generate the documentation using the following HTML structure and CSS classes:
+Please generate the documentation using the following Markdown structure:
 
-<h1>{file_name}</h1>
-<div class="class-section">
-    <h2>ClassDef NameOfClass</h2>
-    <p>The function of the class is XXX. (Only code name and one sentence function description are required)</p>
+# {file_name}
 
-    <h3>Attributes:</h3>
-    <ul class="attribute-list">
-        <li><code>attribute1</code> (<code>type</code>): Description of the first attribute.</li>
-    </ul>
+## Strategic Purpose and Overview:
+Explain the file's primary purpose and how it strategically fits into the broader project or module. Describe its key components, architectural role, and any significant design patterns.
 
-    <h3>Functions:</h3>
-    <ul class="function-list">
-        <li>
-            <code>function_name1</code>(<code>param1</code>: <code>type</code>) -> <code>return_type</code>
-            <ul>
-                <li>Parameters:
-                    <ul>
-                        <li><code>param1</code> (<code>type</code>): Description of the first parameter.</li>
-                    </ul>
-                </li>
-                <li>Returns:
-                    <ul>
-                        <li><code>return_type</code>: Description of the return value.</li>
-                    </ul>
-                </li>
-            </ul>
-        </li>
-    </ul>
+## ClassDef NameOfClass
+The function of the class is XXX. (Only code name and one sentence function description are required)
+FOR CLASSES: If this class inherits from another class, explain *why* it inherits from that specific parent and what functionality it extends or overrides.
 
-    <h3>Called_functions:</h3>
-    <ul class="called-functions-list">
-        <li><code>function1</code>(<code>param1</code>: <code>type</code>) -> <code>return_type</code>: Description of
-            what function1 does and what function1 returns.</li>
-    </ul>
+### Attributes:
+*   `attribute1` (`type`): Description of the first attribute.
 
-    <h3>Code Description:</h3>
-    <p>The description of this class. (Detailed and CERTAIN code analysis and description)</p>
+### Functions:
+*   `function_name1`(`param1`: `type`) -> `return_type`
+    *   Parameters:
+        *   `param1` (`type`): Description of the first parameter.
+    *   Returns:
+        *   `return_type`: Description of the return value.
 
-    <h3>Note:</h3>
-    <p>Points to note about the use of the code according to the returns</p>
+### Called_functions:
+*   `function1`(`param1`: `type`) -> `return_type`: Description of what function1 does and what function1 returns. Explain the interaction and the context in which this function is called, and *how its execution contributes to the overall purpose or functionality* of the current class/function/file. Explain *why* this dependency exists.
 
-    <h3>Input Example:</h3>
-    <pre><code>Provide an input example for a specified data type (e.g., list, double, int) and include a detailed explanation.</code></pre>
+### Code Description:
+The detailed and CERTAIN code analysis and description of this class. Focus on how it achieves its purpose.
 
-    <h3>Output Example:</h3>
-    <pre><code>Provide an output example for a specified data type (e.g., list, double, int) and include a detailed explanation.</code></pre>
-</div>
+### Note:
+Points to note about the use of the code according to the returns, or any architectural considerations.
 
-<div class="function-section">
-    <h2>FunctionDef NameOfFunction</h2>
-    <p>The function of the function is XXX. (Only code name and one sentence function description are required)</p>
+### Input Example:
+```
+Provide an input example for a specified data type (e.g., list, double, int) and include a detailed explanation.
+```
 
-    <h3>Parameters:</h3>
-    <ul class="parameter-list">
-        <li><code>param1</code> (<code>type</code>): Description of the first parameter.</li>
-    </ul>
+### Output Example:
+```
+Provide an output example for a specified data type (e.g., list, double, int) and include a detailed explanation.
+```
 
-    <h3>Returns:</h3>
-    <ul class="return-list">
-        <li><code>return_type</code>: Description of the return value.</li>
-    </ul>
+## FunctionDef NameOfFunction
+The function of the function is XXX. (Only code name and one sentence function description are required)
 
-    <h3>Called Functions:</h3>
-    <ul class="called-functions-list">
-        <li><code>function1</code>(<code>param1</code>: <code>type</code>) -> <code>return_type</code>: Description of
-            what function1 does and what function1 returns.</li>
-    </ul>
+### Parameters:
+*   `param1` (`type`): Description of the first parameter.
 
-    <h3>Code Description:</h3>
-    <p>The description of this function. (Detailed and CERTAIN code analysis and description)</p>
+### Returns:
+*   `return_type`: Description of the return value.
 
-    <h3>Note:</h3>
-    <p>Points to note about the use of the code according to the returns</p>
+### Called Functions:
+*   `function1`(`param1`: `type`) -> `return_type`: Description of what function1 does and what function1 returns. Explain the interaction and the context in which this function is called, and *how its execution contributes to the overall purpose or functionality* of the current class/function/file. Explain *why* this dependency exists.
 
-    <h3>Input Example:</h3>
-    <pre><code>Provide an input example for a specified data type (e.g., list, double, int) and include a detailed explanation.</code></pre>
+### Code Description:
+The detailed and CERTAIN code analysis and description of this function. Focus on how it achieves its purpose.
 
-    <h3>Output Example:</h3>
-    <pre><code>Provide an output example for a specified data type (e.g., list, double, int) and include a detailed explanation.</code></pre>
-</div>
+### Note:
+Points to note about the use of the code according to the returns, or any architectural considerations.
+
+### Input Example:
+```
+Provide an input example for a specified data type (e.g., list, double, int) and include a detailed explanation.
+```
+
+### Output Example:
+```
+Provide an output example for a specified data type (e.g., list, double, int) and include a detailed explanation.
+```
 
 Please generate a detailed explanation document for this object based on the code of the target object itself. For the section Called Functions, considering the additional documentation for the functions and classes called within the file:
 {additional_docs}.
 
-Remember to only use the HTML tags provided as shown in the template above. This structure will ensure that the documentation is properly formatted.
-Make sure that the <pre><code>...</code></pre> tags have no extra spaces or newlines at the beginning or end of the code block.
+Remember to only use the Markdown format provided as shown in the template above. This structure will ensure that the documentation is properly formatted.
+Make sure that the ```...``` blocks have no extra spaces or newlines at the beginning or end of the code block.
 """
 
 DOCUMENTATION_UPDATE_PROMPT = """You are an AI documentation assistant. Your task is to update the existing documentation based on the provided changes in the code. 
