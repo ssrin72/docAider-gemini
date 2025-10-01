@@ -4,10 +4,23 @@ import os
 # Define the extension for Markdown files
 MD_EXTENSION = '.md'
 
-def create_documentation(docs_folder: str, folder_overview_content: str = "", collected_file_docs: List[Tuple[str, str]] = None):
-    # `collected_file_docs` will now be passed directly from multi_agent_app.py
-    # We no longer read individual files from `docs_folder` in this function for the content.
-
+def create_documentation(docs_folder: str, folder_overview_content: str = "", collected_file_docs: List[Tuple[str, str]] = None, output_filename: str = "index.md") -> str:
+    """
+    Creates the full documentation for the project, including an overview, table of contents, and individual file documentation.
+    
+    Args:
+        docs_folder (str): The folder where the final documentation will be saved.
+        folder_overview_content (str): The markdown content for the repository/folder overview.
+        collected_file_docs (List[Tuple[str, str]]): A list of tuples, where each tuple
+                                                      contains (relative_file_path, markdown_content)
+                                                      for individual files.
+        output_filename (str): The desired filename for the generated documentation (e.g., "documentation.md").
+    
+    Returns:
+        str: The full content of the generated documentation.
+    """
+    os.makedirs(docs_folder, exist_ok=True)
+    
     # Generate table of contents based on collected file paths
     # Use collected_file_docs if provided, otherwise default to an empty list
     files_for_toc = [doc[0] for doc in collected_file_docs] if collected_file_docs else []
@@ -30,11 +43,12 @@ def create_documentation(docs_folder: str, folder_overview_content: str = "", co
     output += f"# Project Documentation\n\n## Table of Contents\n{table_of_contents}\n\n{documentation_content}"
 
     # Write the combined content to the output file
-    output_file = os.path.join(docs_folder, f'index{MD_EXTENSION}')
+    output_file = os.path.join(docs_folder, output_filename)
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(output)
 
     print(f"Final documentation has been generated in {output_file}")
+    return output
 
 def create_file_card(file_path: str, docs: str):
     # Remove file extensions for display purposes

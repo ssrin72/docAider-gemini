@@ -1,0 +1,51 @@
+name: Update Documentation on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  update_docs:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grant write permissions to update documentation.md
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for proper git operations later
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' # Use a recent Python version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate and Commit Documentation
+        id: generate_docs
+        run: |
+          # Configure Git user for the commit
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Run the script to generate documentation.md in the repository root
+          python scripts/generate_repo_docs.py --repo_path . --output_file documentation.md
+
+          # Check if there are changes to documentation.md
+          if git diff --exit-code documentation.md; then
+            echo "::notice::No changes detected in documentation.md. Skipping commit."
+          else
+            echo "::notice::Changes detected in documentation.md. Committing updates."
+            git add documentation.md
+            git commit -m "Docs: Update documentation.md after PR merge"
+            git push
+            echo "Committed and pushed documentation.md"
+        env:
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

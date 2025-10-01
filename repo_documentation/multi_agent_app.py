@@ -23,27 +23,26 @@ def run_generate_documentation_for_file(file_path: str) -> str | None:
   Individual files are NOT saved to disk in this function anymore.
   """
   start_time = time.time()
-
-  # Initialize ASTAgent for context analysis. Pass the root_folder (cloned repo)
-  # and the desired output_dir (project's docs_output).
-  # The root_folder for ASTAgent should still be the cloned repo so that relative paths work correctly for code2flow.
-  ast_agent = ASTAgent(root_folder=os.getenv("ROOT_FOLDER", "."), output_dir=OUTPUT_DIR)
-  
-  # The ASTAgent's get_callee_function_info now handles non-Python files gracefully.
-  # Provide a more specific warning here.
-  if not file_path.lower().endswith(".py"):
-      print(f"Note: Skipping AST analysis for non-Python file: {os.path.basename(file_path)}. Proceeding with documentation without AST context.")
-  elif not ast_agent.graph:
-      print(f"Warning: AST analysis for '{os.path.basename(file_path)}' could not generate a call graph. Proceeding with documentation without AST context.")
-  else:
-      print(f"AST call graph available for '{os.path.basename(file_path)}' for context analysis.")
-  
-  print(f"Initiating multi-agent documentation generation for '{os.path.basename(file_path)}'...")
   
   markdown_content = None
   # Exponential backoff for rate limiting (delays in minutes)
   wait_times_seconds = [60, 120, 240, 480, 960, 1920] # 1m, 2m, 4m, 8m, 16m, 32m
   for i, wait_time_sec in enumerate(wait_times_seconds):
+      # Initialize ASTAgent within the retry loop to ensure a fresh state for each attempt
+      # and mitigate issues with closed event loops after failures.
+      ast_agent = ASTAgent(root_folder=os.getenv("ROOT_FOLDER", "."), output_dir=OUTPUT_DIR)
+      
+      # The ASTAgent's get_callee_function_info now handles non-Python files gracefully.
+      # Provide a more specific warning here.
+      if not file_path.lower().endswith(".py"):
+          print(f"Note: Skipping AST analysis for non-Python file: {os.path.basename(file_path)}. Proceeding with documentation without AST context.")
+      elif not ast_agent.graph:
+          print(f"Warning: AST analysis for '{os.path.basename(file_path)}' could not generate a call graph. Proceeding with documentation without AST context.")
+      else:
+          print(f"AST call graph available for '{os.path.basename(file_path)}' for context analysis.")
+      
+      print(f"Initiating multi-agent documentation generation for '{os.path.basename(file_path)}' (attempt {i+1})...")
+
       try:
           markdown_content = mac.multi_agent_documentation_generation(file_path)
           break  # Success, exit loop
