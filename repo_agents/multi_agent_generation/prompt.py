@@ -98,6 +98,42 @@ Provide an output example for a specified data type (e.g., list, double, int) an
 PROVIDE DETAILED DESCRIPTION of what every called functions does, including explanation of the interaction and the context in which it is used.
 """
 
+REPO_DOCUMENTATION_PROMPT = """
+You are an expert software architect and technical writer. Your task is to generate a comprehensive overall documentation for a Python repository.
+
+The goal of this documentation is to provide a high-level understanding for new developers, explaining the repository's main purpose and how each significant Python file contributes to that purpose.
+
+**Repository Context:**
+The repository is located at: {repo_root_path}
+Here is a list of all Python files found in the repository (relative paths):
+{repo_file_list}
+
+**Your Documentation MUST follow this structure:**
+
+# Repository Overview: [Repository Name]
+Provide a detailed overview of the entire repository.
+- What is its primary purpose?
+- What problem does it solve?
+- What are its main components or modules?
+- How do these components generally interact to achieve the overall purpose?
+
+## File Contributions
+
+For EACH Python file listed above, provide a concise summary (1-3 paragraphs) of its specific role and contribution to the overall repository. Explain:
+- What is this file responsible for?
+- What key functionalities does it implement?
+- How does it fit into the larger architecture or workflow of the repository?
+- Mention any notable classes or functions within the file if they are crucial to understanding its contribution.
+
+---
+**Example Structure for a File Contribution:**
+
+### `path/to/filename.py`
+This file is responsible for managing user authentication. It contains `User` model definitions and functions for `login` and `logout`. It interacts with `database_module.py` to persist user data and `api_handlers.py` to expose authentication endpoints.
+---
+"""
+
+
 REVIEWER_PROMPT = """
 
 This is the generated documentation for the source code. Please check its quality and accuracy, and provide suggestions for improvement. Your Suggestions HAVE TO BE specific and clear, so that the revisor can EASILY understand and implement them WITHOUT the knowledge of codebase.
