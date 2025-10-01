@@ -3,18 +3,27 @@ import argparse
 from google.genai.errors import ClientError
 import git
 
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(parent_dir)
+# Define the root of the docAider-gemini project (where this script resides)
+# This is crucial for correctly locating sibling modules and managing paths.
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(PROJECT_ROOT)
+
+import time
+import argparse
+from google.genai.errors import ClientError
+import git
 from dotenv import load_dotenv
-load_dotenv(dotenv_path="./.env")
+load_dotenv(dotenv_path=os.path.join(PROJECT_ROOT, ".env")) # Load from project root
 
 from repo_agents.ast_agent import ASTAgent
 import repo_agents.multi_agent_generation.multi_agent_conversation as mac
 import repo_documentation.merging.merger as merger
 
 # Define the global output directory for documentation artifacts
-OUTPUT_DIR = os.path.join(parent_dir, "docs_output")
-os.makedirs(OUTPUT_DIR, exist_ok=True) # Ensure it exists
+# This will be used when `multi_agent_app.py` is run directly.
+# When called from `generate_repo_docs.py`, `output_dir` will be passed as an argument.
+DEFAULT_OUTPUT_DIR = os.path.join(PROJECT_ROOT, "docs_output")
+os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True) # Ensure it exists
 
 def run_generate_documentation_for_file(file_path: str, root_folder: str, output_dir: str) -> str | None:
   """
@@ -51,13 +60,18 @@ def run_generate_documentation_for_file(file_path: str, root_folder: str, output
       try:
           # multi_agent_documentation_generation internally uses os.getenv("ROOT_FOLDER")
           # Set the environment variable for each call to ensure ASTAgent gets the correct root
+          # mac.multi_agent_documentation_generation internally uses os.getenv("ROOT_FOLDER")
+          # Set the environment variable for each call to ensure ASTAgent gets the correct root.
+          # The environment variable is also used for constructing paths to debug logs.
           original_root_env = os.getenv("ROOT_FOLDER")
-          os.environ["ROOT_FOLDER"] = root_folder
+          os.environ["ROOT_FOLDER"] = root_folder # Set ROOT_FOLDER for the multi-agent system
           markdown_content = mac.multi_agent_documentation_generation(file_path)
           if original_root_env is not None:
               os.environ["ROOT_FOLDER"] = original_root_env # Restore if it was set
           else:
-              del os.environ["ROOT_FOLDER"] # Unset if it was not originally set
+              # Only delete if it wasn't set originally to avoid KeyError
+              if "ROOT_FOLDER" in os.environ:
+                  del os.environ["ROOT_FOLDER"]
           break  # Success, exit loop
       except ClientError as e:
           if "429" in str(e) and i < len(wait_times_seconds) - 1:
@@ -99,8 +113,9 @@ if __name__ == "__main__":
     repo_url = args.repo_url.rstrip('/')
     target_path_in_repo = args.target_path
 
-    clone_dir = os.path.join(parent_dir, "cloned_repos")
-    os.makedirs(clone_dir, exist_ok=True)
+    # The `cloned_repos` directory should reside within the tool's PROJECT_ROOT
+    clone_dir = os.path.join(PROJECT_ROOT, "cloned_repos")
+    os.makedirs(clone_dir, exist_ok=True) # Ensure it exists
     
     repo_name = repo_url.split('/')[-1].replace('.git', '')
     repo_path = os.path.join(clone_dir, repo_name)
@@ -158,12 +173,13 @@ if __name__ == "__main__":
     if is_single_file_target:
         target_file = files_to_process[0]
         print(f"\n--- Processing single file: {target_file} ---")
-        markdown_content = run_generate_documentation_for_file(target_file, source_root_folder, OUTPUT_DIR)
+        # When run directly, use DEFAULT_OUTPUT_DIR for artifacts
+        markdown_content = run_generate_documentation_for_file(target_file, source_root_folder, DEFAULT_OUTPUT_DIR)
         
         if markdown_content:
             # Save single file documentation directly to its own .md file
             output_filename = os.path.basename(target_file) + ".md"
-            output_filepath = os.path.join(OUTPUT_DIR, output_filename)
+            output_filepath = os.path.join(DEFAULT_OUTPUT_DIR, output_filename)
             with open(output_filepath, "w") as f:
                 f.write(markdown_content)
             print(f"Documentation for '{os.path.basename(target_file)}' saved to {output_filepath}")
@@ -207,8 +223,8 @@ if __name__ == "__main__":
                 folder_overview_markdown = f"## Error: An unexpected error occurred during folder overview generation.\nDetails: {e}"
 
         print("\n--- All individual files processed. Merging documentation... ---")
-        merger.create_documentation(docs_folder=OUTPUT_DIR,
+        merger.create_documentation(docs_folder=DEFAULT_OUTPUT_DIR,
                                     folder_overview_content=folder_overview_markdown,
                                     collected_file_docs=collected_file_docs,
                                     output_filename="index.md") # Explicitly keep "index.md" for the app's behavior
-        print(f"Full project documentation merged into {os.path.join(OUTPUT_DIR, 'index.md')}")
+        print(f"Full project documentation merged into {os.path.join(DEFAULT_OUTPUT_DIR, 'index.md')}")

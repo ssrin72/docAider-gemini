@@ -30,18 +30,34 @@ def generate_repo_documentation(repo_path: str, output_filepath: str):
     print(f"Output will be saved to: {output_filepath}")
 
     files_to_process = []
+    # Determine the absolute path of the docAider-gemini tool directory within the target repository
+    # `project_root` is the absolute path to the docAider-gemini directory itself (e.g., /path/to/calcpy/docAider-gemini)
+    tool_abs_path_in_repo = project_root 
+
     # Collect all Python and Ruby files in the repository
-    for root, _, filenames in os.walk(repo_path):
+    for root, dirs, filenames in os.walk(repo_path):
+        # Exclude the entire docAider-gemini tool directory and its contents from processing
+        if root.startswith(tool_abs_path_in_repo):
+            dirs[:] = []  # Don't recurse into this directory
+            continue
+
+        # Exclude standard VCS and temporary directories from being traversed
+        if '.git' in dirs:
+            dirs.remove('.git')
+        if '.doc_gen_temp' in dirs:
+            dirs.remove('.doc_gen_temp')
+        if 'docs_output' in dirs:
+            dirs.remove('docs_output')
+        
         for filename in filenames:
             full_file_path = os.path.join(root, filename)
-            # Exclude files that are part of the documentation generation tool itself
-            # This is to prevent self-documentation loops or issues.
-            # Assuming 'docAider-gemini' is the name of this project directory.
-            # Adjust this filter if the structure or name changes.
-            relative_to_project_root = os.path.relpath(full_file_path, project_root)
-            if relative_to_project_root.startswith((".git", ".github", "scripts", "repo_documentation", "cloned_repos", "docs_output")):
+            
+            # Exclude common non-code files, hidden files, and documentation files
+            if filename.startswith('.') or \
+               filename.endswith(('.bak', '.tmp', '.log', '.md', '.txt', '.yml', '.yaml', '.json', '.html', '.css', '.js')):
                 continue
             
+            # Add only Python and Ruby source files
             if filename.endswith((".py", ".rb")):
                 files_to_process.append(full_file_path)
 
