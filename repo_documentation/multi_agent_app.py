@@ -16,11 +16,16 @@ import repo_documentation.merging.merger as merger
 OUTPUT_DIR = os.path.join(parent_dir, "docs_output")
 os.makedirs(OUTPUT_DIR, exist_ok=True) # Ensure it exists
 
-def run_generate_documentation_for_file(file_path: str) -> str | None:
+def run_generate_documentation_for_file(file_path: str, root_folder: str, output_dir: str) -> str | None:
   """
   Generates documentation for a single file using the multi-agent system.
   Returns the generated Markdown content or None if generation failed.
   Individual files are NOT saved to disk in this function anymore.
+  
+  Args:
+      file_path (str): The full path to the file for which to generate documentation.
+      root_folder (str): The root folder of the repository being documented.
+      output_dir (str): The directory where documentation artifacts (like debug prompts) should be stored.
   """
   start_time = time.time()
   
@@ -30,7 +35,7 @@ def run_generate_documentation_for_file(file_path: str) -> str | None:
   for i, wait_time_sec in enumerate(wait_times_seconds):
       # Initialize ASTAgent within the retry loop to ensure a fresh state for each attempt
       # and mitigate issues with closed event loops after failures.
-      ast_agent = ASTAgent(root_folder=os.getenv("ROOT_FOLDER", "."), output_dir=OUTPUT_DIR)
+      ast_agent = ASTAgent(root_folder=root_folder, output_dir=output_dir)
       
       # The ASTAgent's get_callee_function_info now handles non-Python files gracefully.
       # Provide a more specific warning here.
@@ -44,7 +49,15 @@ def run_generate_documentation_for_file(file_path: str) -> str | None:
       print(f"Initiating multi-agent documentation generation for '{os.path.basename(file_path)}' (attempt {i+1})...")
 
       try:
+          # multi_agent_documentation_generation internally uses os.getenv("ROOT_FOLDER")
+          # Set the environment variable for each call to ensure ASTAgent gets the correct root
+          original_root_env = os.getenv("ROOT_FOLDER")
+          os.environ["ROOT_FOLDER"] = root_folder
           markdown_content = mac.multi_agent_documentation_generation(file_path)
+          if original_root_env is not None:
+              os.environ["ROOT_FOLDER"] = original_root_env # Restore if it was set
+          else:
+              del os.environ["ROOT_FOLDER"] # Unset if it was not originally set
           break  # Success, exit loop
       except ClientError as e:
           if "429" in str(e) and i < len(wait_times_seconds) - 1:
@@ -145,7 +158,7 @@ if __name__ == "__main__":
     if is_single_file_target:
         target_file = files_to_process[0]
         print(f"\n--- Processing single file: {target_file} ---")
-        markdown_content = run_generate_documentation_for_file(target_file)
+        markdown_content = run_generate_documentation_for_file(target_file, source_root_folder, OUTPUT_DIR)
         
         if markdown_content:
             # Save single file documentation directly to its own .md file
@@ -159,7 +172,7 @@ if __name__ == "__main__":
     else: # Process multiple files or a folder/repo
         for i, target_file in enumerate(files_to_process):
             print(f"\n--- Processing file: {target_file} ---")
-            markdown_content = run_generate_documentation_for_file(target_file)
+            markdown_content = run_generate_documentation_for_file(target_file, source_root_folder, OUTPUT_DIR)
             
             if markdown_content:
                 relative_path = os.path.relpath(target_file, source_root_folder)
@@ -194,7 +207,8 @@ if __name__ == "__main__":
                 folder_overview_markdown = f"## Error: An unexpected error occurred during folder overview generation.\nDetails: {e}"
 
         print("\n--- All individual files processed. Merging documentation... ---")
-        merger.create_documentation(OUTPUT_DIR,
+        merger.create_documentation(docs_folder=OUTPUT_DIR,
                                     folder_overview_content=folder_overview_markdown,
-                                    collected_file_docs=collected_file_docs)
+                                    collected_file_docs=collected_file_docs,
+                                    output_filename="index.md") # Explicitly keep "index.md" for the app's behavior
         print(f"Full project documentation merged into {os.path.join(OUTPUT_DIR, 'index.md')}")
