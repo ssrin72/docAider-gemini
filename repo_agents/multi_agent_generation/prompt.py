@@ -28,6 +28,11 @@ Please add notes for any part that you are confused aboutt or if you have any su
 
 The file path is: {file_path}
 
+The content of the file is as follows:
+```
+{file_content}
+```
+
 The Standard Markdown Format is as follows:
 
 # {file_name}

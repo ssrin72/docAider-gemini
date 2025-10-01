@@ -77,7 +77,8 @@ def multi_agent_documentation_generation(file_path) -> str:
         # Carryover: the output of the code context agent.
         "message": DOCUMENTATION_PROMPT.format(
           file_path=file_path,
-          file_name=os.path.basename(file_path)
+          file_name=os.path.basename(file_path),
+          file_content=file_content # Pass file content
         ),
         "max_turns": 2,
         "summary_method": "last_msg",
