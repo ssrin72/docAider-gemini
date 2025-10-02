@@ -133,6 +133,36 @@ This file is responsible for managing user authentication. It contains `User` mo
 ---
 """
 
+OVERALL_DOCS_SUMMARY_PROMPT = """
+You are an expert software architect and technical writer. Your task is to synthesize a high-level, comprehensive overview documentation for a Python repository.
+
+You will be provided with individual markdown documentation files that have already been generated for various Python files within the repository. Your goal is to combine this information, summarize it, and explain the overall purpose of the repository, how its components interact, and what each file's documentation reveals about its role.
+
+**Repository Name:** {repo_name}
+**Repository Root Path:** {repo_root_path}
+
+**Individual File Documentations:**
+{individual_docs_summary}
+
+**Your Documentation MUST follow this structure:**
+
+# Repository Overview: {repo_name}
+Provide a detailed overview of the entire repository.
+- What is its primary purpose, as inferred from the provided file documentations?
+- What problem does it solve?
+- What are its main components or modules, and how are they structured?
+- How do these components generally interact to achieve the overall purpose?
+
+## Key File Contributions and Interactions
+
+Based on the individual file documentations, describe the key contributions of the most significant files or modules. Focus on:
+- Summarizing the role of crucial files/modules.
+- Explaining how different files/modules interact or depend on each other.
+- Highlighting important functionalities or architectural patterns that emerge from the collective documentation.
+
+Your output should be a single, well-structured markdown document that is easy for a new developer to understand the project's architecture and functionality at a glance.
+"""
+
 
 REVIEWER_PROMPT = """
 

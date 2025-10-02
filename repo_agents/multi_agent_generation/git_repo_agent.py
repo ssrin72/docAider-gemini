@@ -17,7 +17,7 @@ class GitRepoAgent:
   It uses GithubInfoPlugin and DocumentationPlugin as tools.
   """
   def __init__(self) -> None:
-    self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
+    self.llm = ChatGoogleGenerativeAI(model=os.getenv("GEMINI_MODEL"), temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
     tools = [
         github_info_plugin.get_all_repos,
         github_info_plugin.get_repo_owner,

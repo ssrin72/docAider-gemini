@@ -11,7 +11,7 @@ load_dotenv(dotenv_path="../.env")
 
 async def main() -> None:
     # Set up LLM and embeddings
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", google_api_key=os.getenv("GEMINI_API_KEY"))
+    llm = ChatGoogleGenerativeAI(model=os.getenv("GEMINI_MODEL"), google_api_key=os.getenv("GEMINI_API_KEY"))
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=os.getenv("GEMINI_API_KEY"))
 
     # Populate vector store

@@ -28,7 +28,7 @@ class CodeContextAgent:
     self.output_folder = os.path.join(self.root_folder, "docs_output")
     os.makedirs(self.output_folder, exist_ok=True) # Ensure output directory exists
 
-    self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
+    self.llm = ChatGoogleGenerativeAI(model=os.getenv("GEMINI_MODEL"), temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
     tools = [code_context_plugin.get_file_content, code_context_plugin.get_callee_function_info]
     
     prompt = ChatPromptTemplate.from_messages(

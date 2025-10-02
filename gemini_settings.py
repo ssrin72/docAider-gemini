@@ -8,7 +8,7 @@ load_dotenv(dotenv_path='.env')
 autogen_llm_config = {
     "config_list": [
         {
-            "model": "gemini-2.5-pro",
+            "model": os.getenv("GEMINI_MODEL"),
             "api_key": os.getenv("GEMINI_API_KEY"),
             "api_type": "google",
         }
