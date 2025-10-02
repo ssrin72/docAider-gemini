@@ -1,4 +1,4 @@
-import git_utils
+from . import git_utils
 import os
 import sys
 import time
