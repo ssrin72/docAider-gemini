@@ -98,6 +98,72 @@ Provide an output example for a specified data type (e.g., list, double, int) an
 PROVIDE DETAILED DESCRIPTION of what every called functions does, including explanation of the interaction and the context in which it is used.
 """
 
+REPO_DOCUMENTATION_PROMPT = """
+You are an expert software architect and technical writer. Your task is to generate a comprehensive overall documentation for a Python repository.
+
+The goal of this documentation is to provide a high-level understanding for new developers, explaining the repository's main purpose and how each significant Python file contributes to that purpose.
+
+**Repository Context:**
+The repository is located at: {repo_root_path}
+Here is a list of all Python files found in the repository (relative paths):
+{repo_file_list}
+
+**Your Documentation MUST follow this structure:**
+
+# Repository Overview: [Repository Name]
+Provide a detailed overview of the entire repository.
+- What is its primary purpose?
+- What problem does it solve?
+- What are its main components or modules?
+- How do these components generally interact to achieve the overall purpose?
+
+## File Contributions
+
+For EACH Python file listed above, provide a concise summary (1-3 paragraphs) of its specific role and contribution to the overall repository. Explain:
+- What is this file responsible for?
+- What key functionalities does it implement?
+- How does it fit into the larger architecture or workflow of the repository?
+- Mention any notable classes or functions within the file if they are crucial to understanding its contribution.
+
+---
+**Example Structure for a File Contribution:**
+
+### `path/to/filename.py`
+This file is responsible for managing user authentication. It contains `User` model definitions and functions for `login` and `logout`. It interacts with `database_module.py` to persist user data and `api_handlers.py` to expose authentication endpoints.
+---
+"""
+
+OVERALL_DOCS_SUMMARY_PROMPT = """
+You are an expert software architect and technical writer. Your task is to synthesize a high-level, comprehensive overview documentation for a Python repository.
+
+You will be provided with individual markdown documentation files that have already been generated for various Python files within the repository. Your goal is to combine this information, summarize it, and explain the overall purpose of the repository, how its components interact, and what each file's documentation reveals about its role.
+
+**Repository Name:** {repo_name}
+**Repository Root Path:** {repo_root_path}
+
+**Individual File Documentations:**
+{individual_docs_summary}
+
+**Your Documentation MUST follow this structure:**
+
+# Repository Overview: {repo_name}
+Provide a detailed overview of the entire repository.
+- What is its primary purpose, as inferred from the provided file documentations?
+- What problem does it solve?
+- What are its main components or modules, and how are they structured?
+- How do these components generally interact to achieve the overall purpose?
+
+## Key File Contributions and Interactions
+
+Based on the individual file documentations, describe the key contributions of the most significant files or modules. Focus on:
+- Summarizing the role of crucial files/modules.
+- Explaining how different files/modules interact or depend on each other.
+- Highlighting important functionalities or architectural patterns that emerge from the collective documentation.
+
+Your output should be a single, well-structured markdown document that is easy for a new developer to understand the project's architecture and functionality at a glance.
+"""
+
+
 REVIEWER_PROMPT = """
 
 This is the generated documentation for the source code. Please check its quality and accuracy, and provide suggestions for improvement. Your Suggestions HAVE TO BE specific and clear, so that the revisor can EASILY understand and implement them WITHOUT the knowledge of codebase.

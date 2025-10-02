@@ -18,8 +18,17 @@ class CodeContextAgent:
   The purpose is to test whether the code context explanation increases the documentation quality.
   Additionally, as a lightweight code explainer, the user can consult with this agent for code context description.
   """
-  def __init__(self) -> None:
-    self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
+  def __init__(self, root_folder: str = None) -> None:
+    if root_folder:
+      self.root_folder = root_folder
+    else:
+      # Default to the project root if root_folder is not provided
+      self.root_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
+    
+    self.output_folder = os.path.join(self.root_folder, "docs_output")
+    os.makedirs(self.output_folder, exist_ok=True) # Ensure output directory exists
+
+    self.llm = ChatGoogleGenerativeAI(model=os.getenv("GEMINI_MODEL"), temperature=0, google_api_key=os.getenv("GEMINI_API_KEY"))
     tools = [code_context_plugin.get_file_content, code_context_plugin.get_callee_function_info]
     
     prompt = ChatPromptTemplate.from_messages(
@@ -39,8 +48,7 @@ class CodeContextAgent:
     """
     message = CODE_CONTEXT_PROMPT.format(file_path=file_path)
     # Save prompt text for debug
-    output_folder = os.path.join(os.getenv("ROOT_FOLDER"), "docs_output")
-    save_prompt_debug(output_folder, file_path + "_code_context", message, Mode.UPDATE)
+    save_prompt_debug(self.output_folder, file_path + "_code_context", message, Mode.UPDATE)
     
     result = await self.agent_executor.ainvoke({"input": message})
     return str(result['output'])
